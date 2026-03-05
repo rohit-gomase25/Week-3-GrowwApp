@@ -8,6 +8,7 @@ import { OrderBookPage } from "@/features/order-book/OrderBookPage";
 import { WatchlistPage } from "@/features/dashboard/WatchlistPage";
 import { LoginPage } from "@/features/auth/LoginPage"; // Import your new page
 import { useUIStore } from "@/store/ui.store";
+import { DashboardHeader } from "@/shared/components/DashboardHeader";
 
 export default function App() {
   // 1. Authentication State
@@ -44,6 +45,7 @@ export default function App() {
       height: "100vh", overflow: "hidden",
       background: "var(--bg-void)",
     }}>
+      <DashboardHeader />
       <Header />
 
       <main style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
