@@ -70,15 +70,14 @@ const fetchMarketStatus = async () => {
       <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
         <span style={{
           fontFamily: "var(--font-display)", fontSize: "20px",
-          fontWeight: "800", color: "var(--green)", letterSpacing: "-0.5px",
+          fontWeight: "800", color: "var(--blue)", letterSpacing: "-0.5px",
         }}>
-          groww
+          OmneNEST
         </span>
         <span style={{
           fontSize: "9px", color: "var(--text-muted)",
           letterSpacing: "2px", fontFamily: "var(--font-mono)",
         }}>
-          915
         </span>
       </div>
 
