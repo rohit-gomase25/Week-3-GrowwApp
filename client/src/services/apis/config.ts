@@ -9,25 +9,25 @@ export const STATIC_PUBLIC_KEY = "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0NCk1Gd3dEUV
 export const BASE_URL = '/api-proxy'; 
 export const DEVICE_ID = '2abe6bee-768f-4714-ab8d-2da64540bda8';
 
+// src/services/auth/config.ts
 export const getAuthHeaders = (token?: string) => {
     const ts = Date.now().toString();
     const headers: any = {
-        'content-type': 'application/json',
+        'Content-Type': 'application/json',
         'appName': 'NVantage - Middleware Qa',
-        'buildNumber': '10005',
         'packageName': 'com.coditas.omnenest.omnenest_mobile_app.middlewareqa',
-        'appVersion': '1.0.6',
-        'os': 'android',
-        'deviceId': DEVICE_ID,
-        'deviceIp': '10.0.2.16',
+        'deviceId': '2abe6bee-768f-4714-ab8d-2da64540bda8', // Use your exact ID
+        'appInstallId': '2abe6bee-768f-4714-ab8d-2da64540bda8',
         'timestamp': ts,
+        'xRequestId': `2abe6bee-768f-4714-ab8d-2da64540bda8-${ts}`, // Strict format
+        'os': 'android',
         'source': 'MOB',
-        'appInstallId': DEVICE_ID,
-        'userAgent': 'com.coditas.omnenest.omnenest_mobile_app.middlewareqa/1.0.6 (Google google sdk_gphone64_x86_64; Android 15 SDK35)',
-        'xRequestId': `${DEVICE_ID}-${ts}` 
+        'buildNumber': '10005',
+        'appVersion': '1.0.6',
+        'deviceIp': '10.0.2.16', // Added from your requirement list
+        'userAgent': 'com.coditas.omnenest.omnenest_mobile_app.middlewareqa/1.0.6 (Google google sdk_gphone64_x86_64; Android 15 SDK35)'
     };
 
-    // Attach the Bearer token if it exists
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
     }
