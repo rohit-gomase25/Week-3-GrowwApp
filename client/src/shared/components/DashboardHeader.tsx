@@ -1,18 +1,19 @@
 import { useEffect, useState, memo } from "react";
 import { getDashboardConfig } from "@/services/apis/dashboard";
+import { useUIStore } from "@/store";
 
 export const DashboardHeader = memo(function DashboardHeader() {
   const [features, setFeatures] = useState<{ name: string }[]>([]);
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
+  
+  // Get setActiveTab from your store
+  const setActiveTab = useUIStore((s) => s.setActiveTab);
 
   useEffect(() => {
     const fetchConfig = async () => {
       try {
         const data = await getDashboardConfig();
-        
-        // Log the successful JSON to the console
-        console.log("%c >>> DASHBOARD CONFIG SUCCESS:", "color: #00ff00; font-weight: bold;", data);
-
+        console.log("Dashboard Config:", data);
         const featuresList = data?.dashboard?.features || data?.data?.features || data?.features || [];
         
         if (Array.isArray(featuresList) && featuresList.length > 0) {
@@ -22,8 +23,6 @@ export const DashboardHeader = memo(function DashboardHeader() {
           setErrorStatus(1); 
         }
       } catch (err: any) {
-        console.error("DashboardHeader API error:", err);
-        // If 412, it's a handshake/session issue
         setErrorStatus(err.response?.status || 500);
       }
     };
@@ -51,16 +50,29 @@ export const DashboardHeader = memo(function DashboardHeader() {
       </span>
       
       {features.length > 0 ? (
-        features.map((feature, index) => (
-          <div key={index} style={{
-            fontSize: "10px", color: "var(--text-primary)",
-            fontFamily: "var(--font-mono)", display: "flex",
-            alignItems: "center", gap: "6px"
-          }}>
-            <span style={{ color: "var(--green)" }}>•</span>
-            {feature.name}
-          </div>
-        ))
+        features.map((feature, index) => {
+          const isUpperWatchlist = feature.name.toLowerCase().includes("watchlist");
+          
+          return (
+            <div 
+              key={index} 
+              // Set to 'watchlist2' to trigger the Manager
+              onClick={() => isUpperWatchlist && setActiveTab("watchlist2")}
+              style={{
+                fontSize: "10px", color: "var(--text-primary)",
+                fontFamily: "var(--font-mono)", display: "flex",
+                alignItems: "center", gap: "6px",
+                cursor: isUpperWatchlist ? "pointer" : "default",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) => isUpperWatchlist && (e.currentTarget.style.color = "var(--green)")}
+              onMouseLeave={(e) => isUpperWatchlist && (e.currentTarget.style.color = "var(--text-primary)")}
+            >
+              <span style={{ color: "var(--green)" }}>•</span>
+              {feature.name}
+            </div>
+          );
+        })
       ) : (
         <span style={{ fontSize: "9px", color: errorStatus ? "var(--red)" : "var(--green)" }}>
           {errorStatus ? getErrorMessage() : "INITIALIZING DATA..."}

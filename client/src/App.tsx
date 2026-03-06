@@ -10,57 +10,49 @@ import { LoginPage } from "@/features/auth/LoginPage";
 import { useUIStore } from "@/store/ui.store";
 import { DashboardHeader } from "@/shared/components/DashboardHeader";
 import { preAuthHandshake } from "@/services/apis/prehandshake";
+import { WatchlistManager } from "./shared/components/WatchlistManager";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isReady, setIsReady] = useState(false);
-
-  // Inside App.tsx - Update the useEffect catch block
-useEffect(() => {
-  const initializeApp = async () => {
-    try {
-      await preAuthHandshake();
-      const token = localStorage.getItem('bearer_token');
-      if (token) setIsAuthenticated(true);
-    } catch (error) {
-      console.error("Critical Session Error. Force-cleaning browser state...");
-      
-      // 1. Wipe everything
-      localStorage.clear(); 
-      sessionStorage.clear();
-      
-      // 2. The Remedy: Force a hard refresh to kill Chrome's internal API cache
-      // We use a query param to prevent an infinite reload loop
-      if (!window.location.search.includes('reset=true')) {
-        window.location.href = window.location.pathname + '?reset=true';
-      }
-      
-      setIsAuthenticated(false);
-    } finally {
-      setIsReady(true);
-    }
-  };
-
-  initializeApp();
-}, []);
-    
-
-  // WebSocket starts only if authenticated
-  useWebSocket();
-
   const activeTab = useUIStore((s) => s.activeTab);
+
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        await preAuthHandshake();
+        const token = localStorage.getItem('bearer_token');
+        if (token) setIsAuthenticated(true);
+      } catch (error) {
+        console.error("Critical Session Error. Force-cleaning browser state...");
+        localStorage.clear(); 
+        sessionStorage.clear();
+        if (!window.location.search.includes('reset=true')) {
+          window.location.href = window.location.pathname + '?reset=true';
+        }
+        setIsAuthenticated(false);
+      } finally {
+        setIsReady(true);
+      }
+    };
+    initializeApp();
+  }, []);
+
+  useWebSocket();
 
   const renderTab = () => {
     switch (activeTab) {
       case "dashboard":  return <DashboardPage />;
       case "portfolio":  return <PortfolioPage />;
       case "orderbook":  return <OrderBookPage />;
+      // Standard Groww Watchlist
       case "watchlist":  return <WatchlistPage />;
+      // API Config Watchlist (Dashboard Header)
+      case "watchlist2": return <WatchlistManager />;
       default:           return <DashboardPage />;
     }
   };
 
-  // Loading Screen
   if (!isReady) {
     return (
       <div style={{ 
@@ -73,7 +65,6 @@ useEffect(() => {
     );
   }
 
-  // Login Screen
   if (!isAuthenticated) {
     return <LoginPage onLoginSuccess={() => setIsAuthenticated(true)} />;
   }
