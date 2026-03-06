@@ -1,12 +1,54 @@
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import { useMarketStore } from "@/store";
 import { useUIStore } from "@/store";
+import axios from "axios";
+import { BASE_URL, getAuthHeaders } from "@/services/apis/config"; // Ensure this path is correct
 
 export const Header = memo(function Header() {
   const isConnected = useMarketStore((s) => s.isConnected);
   const tickCount   = useMarketStore((s) => s.tickCount);
   const activeTab   = useUIStore((s) => s.activeTab);
   const setActiveTab = useUIStore((s) => s.setActiveTab);
+
+  const [isMarketOpen, setIsMarketOpen] = useState(false);
+
+  useEffect(() => {
+    // Header.tsx
+const fetchMarketStatus = async () => {
+  try {
+    const token = localStorage.getItem('bearer_token');
+    
+    // FIX 1: Correct URL Path (Matching your Postman screenshot)
+    // FIX 2: Correct Axios POST syntax -> axios.post(url, data, config)
+    const response = await axios.post(
+      `${BASE_URL}/v2/api/stocks/market-status`, 
+      {}, // Empty body is required as the 2nd argument for POST
+      { headers: getAuthHeaders(token || "") } // Headers must be the 3rd argument
+    );
+
+    console.log("MARKET STATUS DATA:", response.data);
+    
+    // FIX 3: Robust status check
+    const marketArray = response.data?.market_status;
+    if (Array.isArray(marketArray) && marketArray.length > 0) {
+      const status = marketArray[0].marketStatus || "";
+      setIsMarketOpen(status.toLowerCase().includes("open"));
+    }
+  } catch (err) {
+    console.error("Market API Error", err);
+  }
+};
+
+    fetchMarketStatus();
+    const interval = setInterval(fetchMarketStatus, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const statusLabel = !isConnected ? "OFFLINE" : isMarketOpen ? "LIVE" : "CLOSED";
+  const statusColor = (isConnected && isMarketOpen) ? "var(--green)" : "var(--red)";
+
+  // ... (rest of your JSX nav and logo remains the same)
+  // ---------------------------
 
   const tabs: Array<{ id: typeof activeTab; label: string }> = [
     { id: "dashboard",  label: "Market" },
@@ -66,17 +108,17 @@ export const Header = memo(function Header() {
           </span>
         )}
         <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
-          <div className={isConnected ? "pulse" : ""} style={{
+          <div className={(isConnected && isMarketOpen) ? "pulse" : ""} style={{
             width: "7px", height: "7px", borderRadius: "50%",
-            background: isConnected ? "var(--green)" : "var(--red)",
-            boxShadow: isConnected ? "0 0 6px var(--green)" : "none",
+            background: statusColor,
+            boxShadow: (isConnected && isMarketOpen) ? `0 0 6px ${statusColor}` : "none",
           }} />
           <span style={{
             fontSize: "10px", fontWeight: "600", letterSpacing: "1px",
-            color: isConnected ? "var(--green)" : "var(--red)",
+            color: statusColor,
             fontFamily: "var(--font-mono)",
           }}>
-            {isConnected ? "LIVE" : "OFFLINE"}
+            {statusLabel}
           </span>
         </div>
       </div>

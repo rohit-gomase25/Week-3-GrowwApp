@@ -10,23 +10,20 @@ export const DashboardHeader = memo(function DashboardHeader() {
       try {
         const data = await getDashboardConfig();
         
-        console.log("----------------------------");
-        console.log("DASHBOARD CONFIG DATA:", data);
-        console.log("----------------------------");
+        // Log the successful JSON to the console
+        console.log("%c >>> DASHBOARD CONFIG SUCCESS:", "color: #00ff00; font-weight: bold;", data);
 
-        // The path can vary based on the specific middleware version
         const featuresList = data?.dashboard?.features || data?.data?.features || data?.features || [];
         
         if (Array.isArray(featuresList) && featuresList.length > 0) {
           setFeatures(featuresList);
           setErrorStatus(null);
         } else {
-          console.warn("API success but features array is missing or empty.");
-          setErrorStatus(1); // Custom code for empty data
+          setErrorStatus(1); 
         }
       } catch (err: any) {
         console.error("DashboardHeader API error:", err);
-        // Capture the status code (like 412) to show a specific message
+        // If 412, it's a handshake/session issue
         setErrorStatus(err.response?.status || 500);
       }
     };
@@ -34,8 +31,8 @@ export const DashboardHeader = memo(function DashboardHeader() {
   }, []);
 
   const getErrorMessage = () => {
-    if (errorStatus === 412) return "SESSION EXPIRED (412)";
-    if (errorStatus === 404) return "ENDPOINT NOT FOUND (404)";
+    if (errorStatus === 412) return "SESSION AUTH REQUIRED (412)";
+    if (errorStatus === 404) return "CONFIG NOT FOUND (404)";
     return "SYNCING ERROR";
   };
 

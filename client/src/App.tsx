@@ -6,20 +6,46 @@ import { DashboardPage } from "@/pages/DashboardPage";
 import { PortfolioPage } from "@/features/portfolio-overview/PortfolioPage";
 import { OrderBookPage } from "@/features/order-book/OrderBookPage";
 import { WatchlistPage } from "@/features/dashboard/WatchlistPage";
-import { LoginPage } from "@/features/auth/LoginPage"; // Import your new page
+import { LoginPage } from "@/features/auth/LoginPage";
 import { useUIStore } from "@/store/ui.store";
 import { DashboardHeader } from "@/shared/components/DashboardHeader";
+import { preAuthHandshake } from "@/services/apis/prehandshake";
 
 export default function App() {
-  // 1. Authentication State
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem('bearer_token');
-    if (token) setIsAuthenticated(true);
-  }, []);
+  // Inside App.tsx - Update the useEffect catch block
+useEffect(() => {
+  const initializeApp = async () => {
+    try {
+      await preAuthHandshake();
+      const token = localStorage.getItem('bearer_token');
+      if (token) setIsAuthenticated(true);
+    } catch (error) {
+      console.error("Critical Session Error. Force-cleaning browser state...");
+      
+      // 1. Wipe everything
+      localStorage.clear(); 
+      sessionStorage.clear();
+      
+      // 2. The Remedy: Force a hard refresh to kill Chrome's internal API cache
+      // We use a query param to prevent an infinite reload loop
+      if (!window.location.search.includes('reset=true')) {
+        window.location.href = window.location.pathname + '?reset=true';
+      }
+      
+      setIsAuthenticated(false);
+    } finally {
+      setIsReady(true);
+    }
+  };
 
-  // 2. Starts WebSocket connection — only if authenticated
+  initializeApp();
+}, []);
+    
+
+  // WebSocket starts only if authenticated
   useWebSocket();
 
   const activeTab = useUIStore((s) => s.activeTab);
@@ -34,7 +60,20 @@ export default function App() {
     }
   };
 
-  // 3. Conditional Rendering: If not logged in, show ONLY LoginPage
+  // Loading Screen
+  if (!isReady) {
+    return (
+      <div style={{ 
+        height: "100vh", display: "flex", alignItems: "center", 
+        justifyContent: "center", background: "var(--bg-void)", color: "var(--green)",
+        fontFamily: "var(--font-mono)", fontSize: "11px"
+      }}>
+        [ INITIALIZING SECURE SESSION ]
+      </div>
+    );
+  }
+
+  // Login Screen
   if (!isAuthenticated) {
     return <LoginPage onLoginSuccess={() => setIsAuthenticated(true)} />;
   }
@@ -62,7 +101,7 @@ export default function App() {
         flexShrink: 0,
       }}>
         <span>ws://localhost:8080</span>
-        <span>Groww-915 · Simulated data — for learning only</span>
+        <span>Groww-915 · Secure Session Active</span>
       </footer>
 
       <NotificationStack />
