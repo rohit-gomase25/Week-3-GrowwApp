@@ -12,6 +12,7 @@ import { DashboardHeader } from "@/shared/components/DashboardHeader";
 import { preAuthHandshake } from "@/services/apis/prehandshake";
 import { WatchlistManager } from "./shared/components/WatchlistManager";
 import { IndicesManager } from "./shared/components/IndicesManager";
+import { NewsManager } from "./shared/components/NewsManager";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -51,6 +52,7 @@ export default function App() {
       // API Config Watchlist (Dashboard Header)
       case "watchlist2": return <WatchlistManager />;
       case "indices":     return <IndicesManager />;
+      case "news":        return <NewsManager />;
       default:           return <DashboardPage />;
     }
   };
