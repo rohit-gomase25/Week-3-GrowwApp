@@ -2,13 +2,13 @@ import { memo, useEffect, useState, useCallback } from "react";
 import { useMarketStore } from "@/store";
 import { useUIStore } from "@/store";
 import axios from "axios";
-import { BASE_URL, getAuthHeaders } from "@/services/apis/config"; 
+import { BASE_URL, getAuthHeaders } from "@/services/apis/config";
 import { fetchGlobalSearch, SearchResult } from "@/services/apis/search";
 
 export const Header = memo(function Header() {
   const isConnected = useMarketStore((s) => s.isConnected);
-  const tickCount   = useMarketStore((s) => s.tickCount);
-  const activeTab   = useUIStore((s) => s.activeTab);
+  const tickCount = useMarketStore((s) => s.tickCount);
+  const activeTab = useUIStore((s) => s.activeTab);
   const setActiveTab = useUIStore((s) => s.setActiveTab);
 
   const [isMarketOpen, setIsMarketOpen] = useState(false);
@@ -23,7 +23,7 @@ export const Header = memo(function Header() {
     try {
       const token = localStorage.getItem('bearer_token');
       await axios.get(
-        `${BASE_URL}/v1/api/auth/logout`, 
+        `${BASE_URL}/v1/api/auth/logout`,
         { headers: getAuthHeaders(token || "") }
       );
       console.log("DEBUG: API Logout successful");
@@ -67,9 +67,9 @@ export const Header = memo(function Header() {
       try {
         const token = localStorage.getItem('bearer_token');
         const response = await axios.post(
-          `${BASE_URL}/v2/api/stocks/market-status`, 
-          {}, 
-          { headers: getAuthHeaders(token || "") } 
+          `${BASE_URL}/v2/api/stocks/market-status`,
+          {},
+          { headers: getAuthHeaders(token || "") }
         );
 
         const marketArray = response.data?.market_status;
@@ -91,10 +91,10 @@ export const Header = memo(function Header() {
   const statusColor = (isConnected && isMarketOpen) ? "var(--green)" : "var(--red)";
 
   const tabs: Array<{ id: typeof activeTab; label: string }> = [
-    { id: "dashboard",  label: "Market" },
-    { id: "portfolio",  label: "Portfolio" },
-    { id: "orderbook",  label: "Order Book" },
-    { id: "watchlist",  label: "Watchlist" },
+    { id: "dashboard", label: "Market" },
+    { id: "portfolio", label: "Portfolio" },
+    { id: "orderbook", label: "Order Book" },
+    { id: "watchlist", label: "Watchlist" },
   ];
 
   return (
@@ -144,11 +144,12 @@ export const Header = memo(function Header() {
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
               width: "100%", background: "var(--bg-elevated)", border: "1px solid var(--border)",
-              borderRadius: "4px", padding: "6px 12px", color: "var(--text-primary)", 
+              borderRadius: "4px", padding: "6px 12px", color: "var(--text-primary)",
               fontSize: "10px", outline: "none", fontFamily: "var(--font-mono)"
             }}
           />
-          
+
+          {/* RESULTS DROPDOWN */}
           {/* RESULTS DROPDOWN */}
           {searchResults.length > 0 && searchQuery.length >= 3 && (
             <div style={{
@@ -158,10 +159,11 @@ export const Header = memo(function Header() {
               boxShadow: "0 12px 24px rgba(0,0,0,0.6)", borderRadius: "4px"
             }}>
               {searchResults.map((res) => (
-                <div 
-                  key={res.uniqueKey} 
-                  style={{ 
-                    padding: "10px 14px", borderBottom: "1px solid var(--border-subtle)", 
+                <div
+                  // FIX: Changed from res.tradingSymbol to res.uniqueKey
+                  key={res.uniqueKey || res.scripToken}
+                  style={{
+                    padding: "10px 14px", borderBottom: "1px solid var(--border-subtle)",
                     cursor: "pointer"
                   }}
                   onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-elevated)"}
@@ -170,7 +172,6 @@ export const Header = memo(function Header() {
                     console.log("Global Selection:", res.tradingSymbol);
                     setSearchQuery("");
                     setSearchResults([]);
-                    
                   }}
                 >
                   <div style={{ color: "var(--blue)", fontSize: "11px", fontWeight: "bold", fontFamily: "var(--font-mono)" }}>
@@ -191,7 +192,7 @@ export const Header = memo(function Header() {
             {tickCount.toLocaleString()} ticks
           </span>
         )}
-        
+
         <div style={{ display: "flex", alignItems: "center", gap: "7px", borderRight: "1px solid var(--border)", paddingRight: "16px" }}>
           <div className={(isConnected && isMarketOpen) ? "pulse" : ""} style={{
             width: "7px", height: "7px", borderRadius: "50%",
@@ -207,7 +208,7 @@ export const Header = memo(function Header() {
           </span>
         </div>
 
-        <button 
+        <button
           onClick={handleLogout}
           style={{
             background: "none", border: "1px solid var(--border)", color: "var(--text-muted)",
