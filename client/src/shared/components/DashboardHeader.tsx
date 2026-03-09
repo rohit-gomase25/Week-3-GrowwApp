@@ -6,7 +6,8 @@ export const DashboardHeader = memo(function DashboardHeader() {
   const [features, setFeatures] = useState<{ name: string }[]>([]);
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
   
-  // Get setActiveTab from your store
+  // Get activeTab and setActiveTab from your store
+  const activeTab = useUIStore((s) => s.activeTab);
   const setActiveTab = useUIStore((s) => s.setActiveTab);
 
   useEffect(() => {
@@ -53,13 +54,20 @@ export const DashboardHeader = memo(function DashboardHeader() {
         features.map((feature, index) => {
           const nameLower = feature.name.toLowerCase();
           const isUpperWatchlist = nameLower.includes("watchlist");
-          const isIndices = nameLower.includes("indices"); // Added Indices check
+          const isIndices = nameLower.includes("indices");
+          const isMarketNews = nameLower.includes("market news"); // Logic for News
           
-          const isClickable = isUpperWatchlist || isIndices;
+          const isClickable = isUpperWatchlist || isIndices || isMarketNews;
+
+          // Check if the current feature is the active tab
+          const isActive = (isUpperWatchlist && activeTab === "watchlist2") ||
+                           (isIndices && activeTab === "indices") ||
+                           (isMarketNews && activeTab === "news");
 
           const handleTabClick = () => {
             if (isUpperWatchlist) setActiveTab("watchlist2");
-            if (isIndices) setActiveTab("indices"); // Route to IndicesManager
+            if (isIndices) setActiveTab("indices"); 
+            if (isMarketNews) setActiveTab("news"); // Route to NewsManager
           };
 
           return (
@@ -67,14 +75,16 @@ export const DashboardHeader = memo(function DashboardHeader() {
               key={index} 
               onClick={handleTabClick}
               style={{
-                fontSize: "10px", color: "var(--text-primary)",
+                fontSize: "10px", 
+                // Stay green if active, otherwise primary text color
+                color: isActive ? "var(--green)" : "var(--text-primary)",
                 fontFamily: "var(--font-mono)", display: "flex",
                 alignItems: "center", gap: "6px",
                 cursor: isClickable ? "pointer" : "default",
                 transition: "color 0.2s",
               }}
               onMouseEnter={(e) => isClickable && (e.currentTarget.style.color = "var(--green)")}
-              onMouseLeave={(e) => isClickable && (e.currentTarget.style.color = "var(--text-primary)")}
+              onMouseLeave={(e) => isClickable && !isActive && (e.currentTarget.style.color = "var(--text-primary)")}
             >
               <span style={{ color: "var(--green)" }}>•</span>
               {feature.name}

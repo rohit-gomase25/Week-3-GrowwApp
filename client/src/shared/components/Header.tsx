@@ -150,7 +150,6 @@ export const Header = memo(function Header() {
           />
 
           {/* RESULTS DROPDOWN */}
-          {/* RESULTS DROPDOWN */}
           {searchResults.length > 0 && searchQuery.length >= 3 && (
             <div style={{
               position: "absolute", top: "calc(100% + 5px)", left: 0, right: 0,
