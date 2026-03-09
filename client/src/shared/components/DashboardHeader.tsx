@@ -51,22 +51,30 @@ export const DashboardHeader = memo(function DashboardHeader() {
       
       {features.length > 0 ? (
         features.map((feature, index) => {
-          const isUpperWatchlist = feature.name.toLowerCase().includes("watchlist");
+          const nameLower = feature.name.toLowerCase();
+          const isUpperWatchlist = nameLower.includes("watchlist");
+          const isIndices = nameLower.includes("indices"); // Added Indices check
           
+          const isClickable = isUpperWatchlist || isIndices;
+
+          const handleTabClick = () => {
+            if (isUpperWatchlist) setActiveTab("watchlist2");
+            if (isIndices) setActiveTab("indices"); // Route to IndicesManager
+          };
+
           return (
             <div 
               key={index} 
-              // Set to 'watchlist2' to trigger the Manager
-              onClick={() => isUpperWatchlist && setActiveTab("watchlist2")}
+              onClick={handleTabClick}
               style={{
                 fontSize: "10px", color: "var(--text-primary)",
                 fontFamily: "var(--font-mono)", display: "flex",
                 alignItems: "center", gap: "6px",
-                cursor: isUpperWatchlist ? "pointer" : "default",
+                cursor: isClickable ? "pointer" : "default",
                 transition: "color 0.2s",
               }}
-              onMouseEnter={(e) => isUpperWatchlist && (e.currentTarget.style.color = "var(--green)")}
-              onMouseLeave={(e) => isUpperWatchlist && (e.currentTarget.style.color = "var(--text-primary)")}
+              onMouseEnter={(e) => isClickable && (e.currentTarget.style.color = "var(--green)")}
+              onMouseLeave={(e) => isClickable && (e.currentTarget.style.color = "var(--text-primary)")}
             >
               <span style={{ color: "var(--green)" }}>•</span>
               {feature.name}
